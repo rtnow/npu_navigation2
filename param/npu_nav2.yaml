@@ -110,7 +110,7 @@ controller_server:
       plugin: "nav2_controller::SimpleProgressChecker"
       #修改
       #为了达到目标，机器人必须移动的最小量
-      required_movement_radius: 0.1
+      required_movement_radius: 0.5
       #机器人必须移动最小半径的最大时间
       movement_time_allowance: 10.0
     # Goal checker parameters
@@ -132,7 +132,7 @@ controller_server:
       #最大
       max_vel_x: 0.26
       max_vel_y: 0.26
-      #最大角速度
+      #最大角速度rad/s
       max_vel_theta: 0.2
       #最大最小平移速度
       min_speed_xy: 0.0
@@ -158,7 +158,7 @@ controller_server:
       vy_samples: 5
       vtheta_samples: 20
       #提前模拟时间
-      sim_time: 2.0
+      sim_time: 1.7
       #线性距离和角度forward to project
       linear_granularity: 0.05
       angular_granularity: 0.025
@@ -190,42 +190,63 @@ local_costmap:
   local_costmap:
     ros__parameters:
     #修改
+    #代价地图更新频率
       update_frequency: 15.0
+      #将costmap发布的频率
       publish_frequency: 10.0
       #修改
+      #参考坐标系
       global_frame: odom_link
+      #机器人基座坐标系
       robot_base_frame: base_link
       use_sim_time: True
+      #costmap是否和机器人底座一起旋转
       rolling_window: true
+      #成本地图宽
       width: 3
+#      成本地图高
       height: 3
+      #一像素的分辨率
       resolution: 0.05
       #修改
       #机器人半径0.3m
-      robot_radius: 0.2
+      robot_radius: 1.0
       plugins: ["voxel_layer", "inflation_layer"]
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
+        #膨胀半径上的指数衰减因子
         cost_scaling_factor: 3.0
-        inflation_radius: 0.55
+        #扩大致命障碍物周围的成本图的半径(碰撞层)
+        inflation_radius: 0.5
       voxel_layer:
         plugin: "nav2_costmap_2d::VoxelLayer"
         enabled: True
+        #是否发布3D体素网格进行调试
         publish_voxel_map: True
+        #从哪开始标记立体像素
         origin_z: 0.0
+        #立体像素高度分辨率
         z_resolution: 0.05
+        #立体像素高到标记，最多16个
         z_voxels: 16
+        #增加到占用网格的最大高度
         max_obstacle_height: 2.0
+        #2D占用网格中标记为占用的列中的最小立体像素数量
         mark_threshold: 0
+        #数据源的命名空间
         observation_sources: scan
         scan:
         #修改
           topic: /car/scan
+          #增加到占用网格的最大高度
           max_obstacle_height: 2.0
+          #source是否应在costmap中清除raytrace（渲染）
           clearing: True
-          marking: True
+          #是否需要标记
+          marking: False
           data_type: "LaserScan"
       static_layer:
+      #地图主题的QoS设置
         map_subscribe_transient_local: True
       always_send_full_costmap: True
   local_costmap_client:
@@ -245,7 +266,7 @@ global_costmap:
       robot_base_frame: base_link
       use_sim_time: True
       #修改若未提供足迹，则使用机器人半径0.3m
-      robot_radius: 0.2
+      robot_radius: 1.0
       #成本图1像素的分辨率（m）
       resolution: 0.05
       #如果为false，则将位置空间视为自由空间，否则为未知空间
@@ -259,6 +280,7 @@ global_costmap:
         #修改
           topic: /car/scan
           max_obstacle_height: 2.0
+          ##source是否应在costmap中清除raytrace（渲染）
           clearing: True
           marking: True
           data_type: "LaserScan"
@@ -267,8 +289,10 @@ global_costmap:
         map_subscribe_transient_local: True
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
+        #膨胀半径上的指数衰减因子
         cost_scaling_factor: 3.0
-        inflation_radius: 0.25
+        #扩大致命障碍物周围的成本图的半径
+        inflation_radius: 0.5
       always_send_full_costmap: True
   global_costmap_client:
     ros__parameters:
@@ -312,6 +336,8 @@ planner_server_rclcpp_node:
 recoveries_server:
   ros__parameters:
     costmap_topic: local_costmap/costmap_raw
+    #修改一下这个地方
+    #footprint_topic: local_costmap/published_footprint
     footprint_topic: local_costmap/published_footprint
     cycle_frequency: 10.0
     recovery_plugins: ["spin", "back_up", "wait"]
