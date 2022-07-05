@@ -211,40 +211,41 @@ local_costmap:
       #修改
       #机器人半径0.3m
       robot_radius: 1.0
-      plugins: ["voxel_layer", "inflation_layer"]
+      #plugins: ["voxel_layer", "inflation_layer"]
+      plugins: ["inflation_layer"]
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
-        #膨胀半径上的指数衰减因子
-        cost_scaling_factor: 3.0
+        #膨胀半径上的指数衰减因子,实车是2.3，公式为exp(-1.0 * cost_scaling_factor * (distance_from_obstacle - inscribed_radius)) * (254 - 1)=127
+        cost_scaling_factor: 1.0
         #扩大致命障碍物周围的成本图的半径(碰撞层)
-        inflation_radius: 0.5
-      voxel_layer:
-        plugin: "nav2_costmap_2d::VoxelLayer"
-        enabled: True
-        #是否发布3D体素网格进行调试
-        publish_voxel_map: True
-        #从哪开始标记立体像素
-        origin_z: 0.0
-        #立体像素高度分辨率
-        z_resolution: 0.05
-        #立体像素高到标记，最多16个
-        z_voxels: 16
-        #增加到占用网格的最大高度
-        max_obstacle_height: 2.0
-        #2D占用网格中标记为占用的列中的最小立体像素数量
-        mark_threshold: 0
-        #数据源的命名空间
-        observation_sources: scan
-        scan:
-        #修改
-          topic: /car/scan
-          #增加到占用网格的最大高度
-          max_obstacle_height: 2.0
-          #source是否应在costmap中清除raytrace（渲染）
-          clearing: True
-          #是否需要标记
-          marking: False
-          data_type: "LaserScan"
+        inflation_radius: 0.35
+      #voxel_layer:
+      #  plugin: "nav2_costmap_2d::VoxelLayer"
+      #  enabled: True
+      #  #是否发布3D体素网格进行调试
+      #  publish_voxel_map: True
+      #  #从哪开始标记立体像素
+      #  origin_z: 0.0
+      #  #立体像素高度分辨率
+      ##  z_resolution: 0.05
+      #  #立体像素高到标记，最多16个
+      #  z_voxels: 16
+      #  #增加到占用网格的最大高度
+      #  max_obstacle_height: 2.0
+      #  #2D占用网格中标记为占用的列中的最小立体像素数量
+      #  mark_threshold: 0
+      #  #数据源的命名空间
+      #  observation_sources: scan
+      #  scan:
+      #  #修改
+      #    topic: /car/scan
+      #    #增加到占用网格的最大高度
+      #    max_obstacle_height: 2.0
+      #    #source是否应在costmap中清除raytrace（渲染）
+      #    clearing: True
+      #    #是否需要标记
+      #    marking: False
+      #    data_type: "LaserScan"
       static_layer:
       #地图主题的QoS设置
         map_subscribe_transient_local: True
@@ -289,10 +290,10 @@ global_costmap:
         map_subscribe_transient_local: True
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
-        #膨胀半径上的指数衰减因子
-        cost_scaling_factor: 3.0
-        #扩大致命障碍物周围的成本图的半径
-        inflation_radius: 0.5
+        #膨胀半径上的指数衰减因子,实车是2.3，公式为exp(-1.0 * cost_scaling_factor * (distance_from_obstacle - inscribed_radius)) * (254 - 1)=127
+        cost_scaling_factor: 1.0
+        #扩大致命障碍物周围的成本图的半径，一般设为车外接圆半径，实车半径0.35
+        inflation_radius: 0.35
       always_send_full_costmap: True
   global_costmap_client:
     ros__parameters:
